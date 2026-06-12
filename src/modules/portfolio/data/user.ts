@@ -1,0 +1,49 @@
+import type { User } from '@/modules/portfolio/types/user';
+
+export const USER: User = {
+  firstName: 'Harshal',
+  lastName: 'Khobragade',
+  displayName: 'Harshal',
+  username: 'harshalvk',
+  gender: 'male',
+  pronouns: 'he/him',
+  bio: 'I create quick, scalable, and user-friendly web applications with a mix of tidy code and well-considered design.',
+  address: 'Maharashtra, India',
+  phoneNumberB64: 'OTUyOTIwNDUxNg==', // utf-8
+  emailB64: 'aGFyc2hhbHZraG9icmFnYWRlQGdtYWlsLmNvbQ==',
+  website: 'https://harshalvk.com',
+  jobTitle: 'Full-Stack Developer',
+  jobs: [
+    {
+      title: 'Full-Stack Developer',
+      company: 'Wisnolect',
+      website: 'https://www.wisnolect.com/',
+      experienceId: 'wisnolect',
+    },
+  ],
+  about: `
+- I've been coding for the past 3 years, mainly focusing on web development and building scalable backend systems.
+- In this time, I've worked with various technologies to create fast, responsive applications, from backend architecture to frontend development and deployment.
+- I enjoy solving real-world problems with code and constantly aim to improve while staying current with tech trends.
+`,
+  avatar: '',
+  ogImage: '',
+  timeZone: 'Asia/Kolkata',
+  keywords: [
+    'harshalvk',
+    'harshal',
+    'harshalvk.com',
+    'harshal khobragade',
+    'harshal vasant khobragade',
+    'harshal portfolio',
+    'harshalvk portfolio',
+    'full-stack developer',
+    'software engineer',
+    'web developer',
+    'developer',
+    'next.js',
+    'nextjs',
+    'typescript',
+  ],
+  dateCreated: '2026-06-01',
+};
