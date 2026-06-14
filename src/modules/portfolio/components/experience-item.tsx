@@ -52,7 +52,7 @@ function PositionItem({ position, isLast }: { position: ExperiencePosition; isLa
           <div
             className={cn(
               'relative z-10 flex size-6 shrink-0 items-center justify-center rounded-sm',
-              'bg-background border-border border',
+              'bg-muted',
               '[&_svg]:shrink-0 [&_svg:not([class*="size-"])]:size-3.5'
             )}
           >
@@ -162,10 +162,7 @@ export function ExperienceItem({
   const latestEnd = ends[0];
 
   return (
-    <div
-      id={`experience-${experience.id}`}
-      className={cn('scroll-mt-20 space-y-3 px-4 py-4', !isLast && 'border-b')}
-    >
+    <div id={`experience-${experience.id}`} className={cn('scroll-mt-20 space-y-3 px-4 py-4')}>
       {/* Company header */}
       <div className="flex items-center gap-3">
         {/* Company logo/icon */}

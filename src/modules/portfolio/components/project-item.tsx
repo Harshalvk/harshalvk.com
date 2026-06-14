@@ -50,7 +50,7 @@ export function ProjectItem({ project }: { project: Project }) {
           <div className="self-stretch border-r border-dashed" />
           <div className="flex h-full flex-1 items-center justify-between p-5">
             <div>
-              <h3 className="text-xl font-medium">{project.title}</h3>
+              <h3 className="font-medium lg:text-xl">{project.title}</h3>
 
               <div className="flex gap-1">
                 <p className="text-muted-foreground text-sm">{formatDate(project.period.start)}</p>

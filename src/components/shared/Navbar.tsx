@@ -56,10 +56,10 @@ const Navbar = () => {
 export function SectionCorners() {
   return (
     <>
-      <div className="border-muted-foreground absolute -top-px -left-px h-2 w-2 border-t-1 border-l-1" />
-      <div className="border-muted-foreground absolute -top-px -right-px h-2 w-2 border-t-1 border-r-1" />
-      <div className="border-muted-foreground absolute -bottom-px -left-px h-2 w-2 border-b-1 border-l-1" />
-      <div className="border-muted-foreground absolute -right-px -bottom-px h-2 w-2 border-r-1 border-b-1" />
+      <div className="border-muted-foreground/50 absolute -top-px -left-px h-2 w-2 border-t-1 border-l-1" />
+      <div className="border-muted-foreground/50 absolute -top-px -right-px h-2 w-2 border-t-1 border-r-1" />
+      <div className="border-muted-foreground/50 absolute -bottom-px -left-px h-2 w-2 border-b-1 border-l-1" />
+      <div className="border-muted-foreground/50 absolute -right-px -bottom-px h-2 w-2 border-r-1 border-b-1" />
     </>
   );
 }

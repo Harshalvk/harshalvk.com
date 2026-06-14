@@ -20,11 +20,7 @@ const Experiences = () => {
       </PanelHeader>
       <CollapsibleList
         items={EXPERIENCES}
-        renderItem={(project) => (
-          <div className="border-b last:border-b-0">
-            <ExperienceItem experience={project} />
-          </div>
-        )}
+        renderItem={(project) => <ExperienceItem experience={project} />}
       />
     </Panel>
   );
