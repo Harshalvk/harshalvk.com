@@ -1,9 +1,17 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
+@import './scroll-fade-effect.css';
 
 @plugin '@tailwindcss/typography';
+@plugin 'tailwind-scrollbar-hide';
 
 @custom-variant dark (&:is(.dark *));
+
+@custom-variant supports-timeline-scroll {
+  @supports (animation-timeline: scroll()) {
+    @slot;
+  }
+}
 
 @theme inline {
   --color-background: var(--background);
@@ -132,6 +140,12 @@
   body {
     overflow-x: hidden;
     max-width: 100%;
+  }
+
+  [data-radix-popper-content-wrapper],
+  [data-radix-dialog-overlay] {
+    right: 0 !important;
+    width: 100vw !important;
   }
 }
 
