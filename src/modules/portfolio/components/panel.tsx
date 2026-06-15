@@ -45,10 +45,7 @@ export function PanelTitle({
 
   return (
     <Comp
-      className={cn(
-        'text-xl font-medium tracking-tight sm:text-2xl md:text-3xl lg:text-4xl',
-        className
-      )}
+      className={cn('text-2xl font-medium tracking-tight md:text-3xl lg:text-4xl', className)}
       {...props}
     />
   );
