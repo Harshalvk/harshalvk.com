@@ -63,7 +63,7 @@ const Hero = () => {
           className={`text-base leading-6 text-zinc-600 sm:text-lg sm:leading-7 dark:text-zinc-400 ${inter.className}`}
         >
           <Prose>
-            <MarkdownClient>{USER.bio}</MarkdownClient>
+            <MarkdownClient>{`${USER.bio}\n\n${USER.additionalInfo}`}</MarkdownClient>
           </Prose>
         </div>
       </div>

@@ -9,6 +9,8 @@ export type User = {
   /** e.g. "he/him", "she/her", "they/them" */
   pronouns: string;
   bio: string;
+  /** additional inforamtion except bio & about */
+  additionalInfo?: string;
   /** Short phrases rotated in UI (e.g., homepage flip effect) */
   flipSentences?: string[];
   /** General location for display */
