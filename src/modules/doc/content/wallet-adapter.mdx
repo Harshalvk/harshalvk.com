@@ -1,7 +1,7 @@
 ---
 title: Wallet Adapter
 description: A Solana wallet connection button with a dialog wallet picker and connected-state dropdown.
-image: /images/components/wallet-connect.png
+image: /wallet-adapter.png
 category: components
 createdAt: 2026-06-16
 updatedAt: 2026-06-18
@@ -91,10 +91,11 @@ This component takes no props. State is managed internally via the `useWallet` h
 
 Wraps your application with Solana connection and wallet context.
 
-| Prop       | Type        | Default     | Description                   |
-| ---------- | ----------- | ----------- | ----------------------------- |
-| `network`  | `Network`   | `"testnet"` | Solana cluster to connect to. |
-| `children` | `ReactNode` | —           | Application content.          |
+| Prop          | Type        | Default | Description                                              |
+| ------------- | ----------- | ------- | -------------------------------------------------------- |
+| `children`    | `ReactNode` | —       | Application content.                                     |
+| `network`     | `Network`   | mainnet | Solana cluster to connect to.                            |
+| `autoConnect` | `boolean`   | false   | Automatically reconnect to previously connected wallets. |
 
 ## Notes
 
@@ -102,3 +103,4 @@ Wraps your application with Solana connection and wallet context.
 - Once connected, swaps to a `DropdownMenu` showing the truncated public key with a disconnect action.
 - Wallet selection errors are currently only logged to the console — consider surfacing these via toast in production.
 - The `supportedWallets` filter is defined in the component but not currently applied; the dialog lists all detected adapters.
+- Wallet connection uses a `useEffect` watching the selected wallet to call `connect()` — this avoids a race condition where calling `connect()` immediately after `select()` could intermittently fail.
