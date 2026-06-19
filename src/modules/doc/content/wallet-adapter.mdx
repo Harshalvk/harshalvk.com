@@ -4,7 +4,7 @@ description: A Solana wallet connection button with a dialog wallet picker and c
 image: /wallet-adapter.png
 category: components
 createdAt: 2026-06-16
-updatedAt: 2026-06-18
+updatedAt: 2026-06-19
 ---
 
 <ComponentPreview
@@ -17,7 +17,9 @@ updatedAt: 2026-06-18
 
 - Dialog-based wallet picker listing detected wallet adapters in the browser.
 - Dropdown menu with truncated public key and disconnect action once connected.
-- Loading state on the trigger button while a connection is in progress.
+- Loading state on the trigger button, and per-row, while a connection is in progress.
+- Inline error message in the dialog if a connection attempt fails or is rejected.
+- Safe handling of rapid wallet switching — only the most recently selected wallet's result is applied.
 - Configurable Solana network and auto-connect behavior.
 
 ## Installation
@@ -85,7 +87,11 @@ import { WalletAdapter } from '@/components/wallet-adapter';
 
 ### WalletAdapter
 
-This component takes no props. State is managed internally via the `useWallet` hook — connection status, the active public key, and the list of detected adapters all come from context.
+| Prop        | Type     | Default | Description                                       |
+| ----------- | -------- | ------- | ------------------------------------------------- |
+| `className` | `string` | —       | Additional classes applied to the trigger button. |
+
+Connection state is otherwise managed internally via the `useWallet` hook — connection status, the active public key, and the list of detected adapters all come from context.
 
 ### WalletContextProvider
 
@@ -94,13 +100,12 @@ Wraps your application with Solana connection and wallet context.
 | Prop          | Type        | Default | Description                                              |
 | ------------- | ----------- | ------- | -------------------------------------------------------- |
 | `children`    | `ReactNode` | —       | Application content.                                     |
-| `network`     | `Network`   | mainnet | Solana cluster to connect to.                            |
-| `autoConnect` | `boolean`   | false   | Automatically reconnect to previously connected wallets. |
+| `network`     | `Network`   | devnet  | Solana cluster to connect to.                            |
+| `autoConnect` | `boolean`   | true    | Automatically reconnect to previously connected wallets. |
 
 ## Notes
 
 - Renders a `DialogTrigger` button when no wallet is connected, opening a list of detected wallet adapters to choose from.
 - Once connected, swaps to a `DropdownMenu` showing the truncated public key with a disconnect action.
-- Wallet selection errors are currently only logged to the console — consider surfacing these via toast in production.
-- The `supportedWallets` filter is defined in the component but not currently applied; the dialog lists all detected adapters.
-- Wallet connection uses a `useEffect` watching the selected wallet to call `connect()` — this avoids a race condition where calling `connect()` immediately after `select()` could intermittently fail.
+- Connection failures, including a user rejecting the request in their wallet extension, are shown as an inline message in the dialog.
+- `WalletProvider` is configured with an empty `wallets` array. Wallets that implement the Wallet Standard (Phantom, Solflare, Backpack, MetaMask, etc.) are auto-detected automatically — add adapters to that array only if you need to support a legacy, non-Wallet-Standard wallet.
