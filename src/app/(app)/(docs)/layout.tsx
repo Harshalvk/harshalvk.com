@@ -1,6 +1,6 @@
 import React from 'react';
 
-const PagesLayout = ({ children }: { children: React.ReactNode }) => {
+const DocLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <section className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 lg:px-0">
       {children}
@@ -8,4 +8,4 @@ const PagesLayout = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-export default PagesLayout;
+export default DocLayout;
