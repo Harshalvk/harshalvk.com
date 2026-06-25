@@ -100,7 +100,7 @@ const ComponentItemPage = async ({ params }: { params: Promise<{ slug: string }>
     notFound();
   }
 
-  const allDocs = (await getDocsByCategory(doc.content)).slice().sort((a, b) =>
+  const allDocs = (await getDocsByCategory(doc.metadata.category)).slice().sort((a, b) =>
     a.metadata.title.localeCompare(b.metadata.title, 'en', {
       sensitivity: 'base',
     })
