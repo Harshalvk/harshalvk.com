@@ -12,7 +12,6 @@ import {
   LucideIcon,
   MonitorIcon,
   MoonStarIcon,
-  Newspaper,
   RssIcon,
   Search,
   SunMedium,
@@ -180,27 +179,29 @@ const CommandMenu = ({
     [docs]
   );
 
+  const handleCommandHighlight = useCallback(() => {
+    setSelectedCommandKind('command');
+  }, []);
+
   const componentsGroup = useMemo(() => {
-    if (!components || components.length === 0) {
-      return null;
-    }
+    if (!components || components.length === 0) return null;
 
     return (
       <CommandGroup heading="Components">
-        {components.map((component) => {
-          return (
-            <CommandMenuItem
-              key={component.slug}
-              keywords={['component']}
-              onSelect={() => {
-                handleOpenLink(`/components/${component.slug}`);
-              }}
-            />
-          );
-        })}
+        {components.map((component) => (
+          <CommandMenuItem
+            key={component.slug}
+            keywords={['component']}
+            onHighlight={handleCommandHighlight}
+            onSelect={() => handleOpenLink(`/components/${component.slug}`)}
+          >
+            <Icons.react />
+            <p className="line-clamp-1">{component.title}</p>
+          </CommandMenuItem>
+        ))}
       </CommandGroup>
     );
-  }, [components, handleOpenLink]);
+  }, [components, handleOpenLink, handleCommandHighlight]);
 
   const blogLinks = useMemo(
     () =>
@@ -217,10 +218,6 @@ const CommandMenu = ({
 
   const handleLinkHighlight = useCallback((link: CommandLinkItem) => {
     setSelectedCommandKind(link.kind);
-  }, []);
-
-  const handleCommandHighlight = useCallback(() => {
-    setSelectedCommandKind('command');
   }, []);
 
   useHotkeys(
@@ -275,13 +272,13 @@ const CommandMenu = ({
 
               {componentsGroup}
 
-              <CommandLinkGroup
+              {/* <CommandLinkGroup
                 heading="Blog"
                 links={blogLinks}
                 fallbackIcon={<Newspaper />}
                 onLinkHighlight={handleLinkHighlight}
                 onLinkSelect={handleOpenLink}
-              />
+              /> */}
 
               <CommandLinkGroup
                 heading="Social Links"
