@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
 import AppProvider from '@/components/Providers/AppProvider';
+import { Analytics } from '@vercel/analytics/next';
 
 import '@/styles/globals.css';
 
@@ -19,6 +20,7 @@ export default function RootLayout({
       <body
         className={`${GeistSans.variable} ${GeistMono.variable} flex min-h-svh w-screen flex-col font-sans antialiased`}
       >
+        <Analytics />
         <AppProvider>{children}</AppProvider>
       </body>
     </html>
