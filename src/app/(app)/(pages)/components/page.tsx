@@ -43,12 +43,10 @@ export default async function ComponentsPage() {
         <p className="text-muted-foreground text-sm md:text-base">{description}</p>
       </div>
       <div className="screen-line-top screen-line-bottom bg-hatching h-10" />
-      <div className="flex divide-x-1 divide-dashed border-b border-dashed">
+      <div className="divide-y-1 divide-dashed border-b border-dashed md:flex md:divide-x-1 md:divide-y-0">
         {docs.map((doc) => (
           <ComponentItem key={doc.slug} href={`/components/${doc.slug}` as Route}>
-            <ComponentItemTitle as="h3" className="md:text-xl">
-              {doc.metadata.title}
-            </ComponentItemTitle>
+            <ComponentItemTitle>{doc.metadata.title}</ComponentItemTitle>
           </ComponentItem>
         ))}
       </div>
