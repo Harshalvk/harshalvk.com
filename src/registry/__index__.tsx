@@ -95,7 +95,30 @@ export const Index: Record<string, any> = {
         ) || item.name;
       return { default: mod.default || mod[exportName] };
     }),
-    categories: [''],
+    categories: ['interaction', 'forms'],
+    meta: undefined,
+  },
+  'scratch-card': {
+    name: 'scratch-card',
+    description:
+      'A canvas-based scratch-to-reveal card with built-in reward variants, scoped confetti, and an imperative handle for programmatic control — ideal for promotions, giveaways, and reward flows.',
+    type: 'registry:component',
+    files: [
+      {
+        path: 'src/registry/components/scratch-card/scratch-card.tsx',
+        type: 'registry:component',
+        target: '@components/scratch-card.tsx',
+      },
+    ],
+    component: React.lazy(async () => {
+      const mod = await import('@/registry/components/scratch-card/scratch-card.tsx');
+      const exportName =
+        Object.keys(mod).find(
+          (key) => typeof mod[key] === 'function' || typeof mod[key] === 'object'
+        ) || item.name;
+      return { default: mod.default || mod[exportName] };
+    }),
+    categories: ['interactive'],
     meta: undefined,
   },
   'wallet-adapter-demo': {
@@ -177,6 +200,28 @@ export const Index: Record<string, any> = {
     ],
     component: React.lazy(async () => {
       const mod = await import('@/registry/examples/drag-to-confirm-demo.tsx');
+      const exportName =
+        Object.keys(mod).find(
+          (key) => typeof mod[key] === 'function' || typeof mod[key] === 'object'
+        ) || item.name;
+      return { default: mod.default || mod[exportName] };
+    }),
+    categories: undefined,
+    meta: undefined,
+  },
+  'scratch-card-demo': {
+    name: 'scratch-card-demo',
+    description: '',
+    type: 'registry:example',
+    files: [
+      {
+        path: 'src/registry/examples/scratch-card-demo.tsx',
+        type: 'registry:example',
+        target: '@components/scratch-card-demo.tsx',
+      },
+    ],
+    component: React.lazy(async () => {
+      const mod = await import('@/registry/examples/scratch-card-demo.tsx');
       const exportName =
         Object.keys(mod).find(
           (key) => typeof mod[key] === 'function' || typeof mod[key] === 'object'

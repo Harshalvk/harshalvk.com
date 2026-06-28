@@ -61,7 +61,23 @@ export const components: Registry['items'] = [
         target: '@components/drag-to-confirm.tsx',
       },
     ],
-    categories: [''],
+    categories: ['interaction', 'forms'],
     docs: 'https://harshalvk.com/components/drag-to-confirm',
+  },
+  {
+    name: 'scratch-card',
+    type: 'registry:component',
+    title: 'Scratch Card',
+    description:
+      'A canvas-based scratch-to-reveal card with built-in reward variants, scoped confetti, and an imperative handle for programmatic control — ideal for promotions, giveaways, and reward flows.',
+    files: [
+      {
+        path: 'components/scratch-card/scratch-card.tsx',
+        type: 'registry:component',
+        target: '@components/scratch-card.tsx',
+      },
+    ],
+    categories: ['interactive'],
+    docs: 'https://harshalvk.com/components/scratch-card',
   },
 ];
