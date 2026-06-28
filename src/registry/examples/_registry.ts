@@ -45,4 +45,15 @@ export const examples: Registry['items'] = [
       },
     ],
   },
+  {
+    name: 'scratch-card-demo',
+    type: 'registry:example',
+    files: [
+      {
+        path: 'examples/scratch-card-demo.tsx',
+        type: 'registry:example',
+        target: '@components/scratch-card-demo.tsx',
+      },
+    ],
+  },
 ];
