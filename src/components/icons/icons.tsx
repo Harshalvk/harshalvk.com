@@ -299,7 +299,7 @@ export const Icons = {
   react: (props: IconProps) => (
     <svg viewBox="0 0 569 512" {...props} aria-hidden xmlnsXlink="http://www.w3.org/1999/xlink">
       <g fill="none" fillRule="evenodd">
-        <g transform="translate(-227, -256)" fill="#58C4DC" fillRule="nonzero">
+        <g transform="translate(-227, -256)" fill="currentColor" fillRule="nonzero">
           <g transform="translate(227, 256)">
             <path
               d="M285.5,201 C255.400481,201 231,225.400481 231,255.5 C231,285.599519 255.400481,310 285.5,310 C315.599519,310 340,285.599519 340,255.5 C340,225.400481 315.599519,201 285.5,201"
