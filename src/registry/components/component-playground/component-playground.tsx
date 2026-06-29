@@ -38,7 +38,7 @@ export type PropControl =
 
 type ControlValues = Record<string, boolean | string | number>;
 
-export interface HookPlaygroundProps {
+export interface ComponentPlaygroundProps {
   /** The component being demoed. */
   component: React.ComponentType<any>;
   /**
@@ -320,14 +320,14 @@ function CopyButton({ text }: { text: string }) {
  * generated JSX snippet underneath always reflects the current values,
  * so readers can copy exactly what they're looking at.
  */
-export function HookPlayground({
+export function ComponentPlayground({
   component: Component,
   componentName,
   controls,
   staticProps,
   previewClassName,
   className,
-}: HookPlaygroundProps) {
+}: ComponentPlaygroundProps) {
   const defaults = React.useMemo(() => getDefaults(controls), [controls]);
   const [values, setValues] = React.useState<ControlValues>(defaults);
 
