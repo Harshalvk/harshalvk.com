@@ -15,6 +15,7 @@ import {
   RssIcon,
   Search,
   SunMedium,
+  Hexagon,
 } from 'lucide-react';
 import React, { useCallback, useMemo, useState } from 'react';
 import { SOCIAL_LINKS } from '@/modules/portfolio/data/social-links';
@@ -72,6 +73,13 @@ const MENU_LINKS: CommandLinkItem[] = [
     kind: 'page',
     icon: <Book />,
     shortcut: 'GB',
+  },
+  {
+    title: 'Theia',
+    href: '/theia',
+    kind: 'page',
+    icon: <Hexagon />,
+    shortcut: 'GT',
   },
 ];
 

@@ -19,6 +19,11 @@ const navLinks = [
     name: 'Components',
     link: '/components',
   },
+  {
+    shrug: 'theia',
+    name: 'Theia',
+    link: '/theia',
+  },
 ];
 
 const Navbar = async () => {
