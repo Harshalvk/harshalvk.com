@@ -5,7 +5,6 @@ import {
   Book,
   BriefcaseBusiness,
   CornerDownLeftIcon,
-  Cuboid,
   FileTextIcon,
   Home,
   Kanban,
@@ -15,6 +14,10 @@ import {
   RssIcon,
   Search,
   SunMedium,
+  Hexagon,
+  ZapIcon,
+  SignatureIcon,
+  UserSearchIcon,
 } from 'lucide-react';
 import React, { useCallback, useMemo, useState } from 'react';
 import { SOCIAL_LINKS } from '@/modules/portfolio/data/social-links';
@@ -73,6 +76,13 @@ const MENU_LINKS: CommandLinkItem[] = [
     icon: <Book />,
     shortcut: 'GB',
   },
+  {
+    title: 'Theia',
+    href: '/theia',
+    kind: 'page',
+    icon: <Hexagon />,
+    shortcut: 'GT',
+  },
 ];
 
 const PORTFOLIO_LINKS: CommandLinkItem[] = [
@@ -80,19 +90,31 @@ const PORTFOLIO_LINKS: CommandLinkItem[] = [
     title: 'About Me.',
     href: '/#about',
     kind: 'page',
-    icon: <Cuboid />,
+    icon: <SignatureIcon />,
   },
   {
     title: 'Experience.',
-    href: '#/experiences',
+    href: '/#experiences',
     kind: 'page',
     icon: <BriefcaseBusiness />,
   },
   {
     title: 'Projects.',
-    href: '#/projects',
+    href: '/#projects',
     kind: 'page',
     icon: <Kanban />,
+  },
+  {
+    title: 'Technologies I Use.',
+    href: '/#technologies',
+    kind: 'page',
+    icon: <ZapIcon />,
+  },
+  {
+    title: 'Contact Me.',
+    href: '/#contactme',
+    kind: 'page',
+    icon: <UserSearchIcon />,
   },
 ];
 
