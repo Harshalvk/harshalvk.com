@@ -49,19 +49,21 @@ export function StepExplanation({
       className="bg-surface inset-ring-border/64 rounded-xl inset-ring-1"
     >
       <CollapsibleTrigger className="flex w-full items-start justify-between gap-3 p-4 text-left">
-        <div className="flex-1">
-          <p className="text-sm leading-relaxed">{step.description}</p>
+        <div className="flex flex-1 flex-col justify-between gap-1.5 sm:flex-row">
+          <div className="flex-1">
+            <p className="text-sm leading-relaxed">{step.description}</p>
+            {(step.comparisons !== undefined || step.swaps !== undefined) && (
+              <div className="text-muted-foreground flex gap-4 font-mono text-xs">
+                {step.comparisons !== undefined && <span>Comparisons: {step.comparisons}</span>}
+                {step.swaps !== undefined && <span>Swaps: {step.swaps}</span>}
+              </div>
+            )}
+          </div>
 
-          {(step.comparisons !== undefined || step.swaps !== undefined) && (
-            <div className="text-muted-foreground mt-3 flex gap-4 font-mono text-xs">
-              {step.comparisons !== undefined && <span>Comparisons: {step.comparisons}</span>}
-              {step.swaps !== undefined && <span>Swaps: {step.swaps}</span>}
-            </div>
-          )}
+          <span className="text-muted-foreground inline-block font-mono text-xs">
+            Step {currentStep + 1} / {totalSteps}
+          </span>
         </div>
-        <span className="text-muted-foreground ml-auto font-mono text-xs">
-          Step {currentStep + 1} / {totalSteps}
-        </span>
 
         <ChevronDownIcon
           className={cn(
@@ -81,7 +83,7 @@ export function StepExplanation({
               onClick={() => onStepSelect(idx)}
               className={cn(
                 'border-border hover:bg-muted/50 flex w-full items-start gap-3 border-b border-dashed px-4 py-2 text-left text-sm transition-all duration-200 last:border-b-0',
-                idx === currentStep && 'bg-primary/10 text-primary'
+                idx === currentStep && 'bg-primary/10 text-primary last:rounded-b-xl'
               )}
             >
               <span
