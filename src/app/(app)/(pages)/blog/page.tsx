@@ -59,11 +59,11 @@ export async function generateStaticParams() {
 }
 
 const BlogPage = async () => {
-  const docs = (await getDocsByCategory('blogs')).slice().sort((a, b) =>
-    a.metadata.title.localeCompare(b.metadata.title, 'en', {
-      sensitivity: 'base',
-    })
-  );
+  const docs = (await getDocsByCategory('blogs'))
+    .slice()
+    .sort(
+      (a, b) => new Date(b.metadata.createdAt).getTime() - new Date(a.metadata.createdAt).getTime()
+    );
 
   return (
     <section aria-labelledby="blogs-heading" className="flex-1 gap-3 border-x">

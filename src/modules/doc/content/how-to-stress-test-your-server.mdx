@@ -1,0 +1,493 @@
+---
+title: How to Stress Test Your Server
+description: Learn how to stress test your backend server using k6, Artillery, and Apache Bench. Includes TypeScript/Express examples that apply to any backend framework.
+image: /og/blog/stress-test
+category: blogs
+readingTime: 11 min read
+createdAt: 2026-09-07
+updatedAt: 2026-09-07
+---
+
+Most servers look fine under 10 concurrent users. The problems show up at 500.
+
+The subtle failures: response times slowly moving from 40ms to 4 seconds, memory climbing and never coming back down, a database connection pool exhausted because nobody thought about what happens when 200 or 2000 requests arrive in the same second.
+
+Stress testing is how you find those problems before your users or other do. This blog covers how to do it properly, what tools to use, what to measure, and how to read the results.
+
+---
+
+## What Stress Testing Actually Means
+
+So I used to think "load testing", "stress testing", and "performance testing" interchangeably, but they're not the same thing.
+
+- **Load testing**: send realistic traffic and verify the server handles it within acceptable thresholds
+- **Stress testing**: push beyond expected limits to find where the server breaks and how it recovers
+- **Soak testing**: send moderate load for a long time (hours, days) to catch slow memory leaks and connection leaks that don't show up in short tests
+- **Spike testing**: sudden burst of traffic to see how the server handles abrupt change
+
+This blog focuses on stress testing, but the tools and patterns apply to all of them.
+
+---
+
+## Setting Up a Testable Server
+
+Before running any load test, your server needs to expose the right information. Without structured logging and metrics, you're flying blind.
+
+Here's a minimal Express setup with the instrumentation you'll need:
+
+```typescript
+import express from 'express';
+import type { Application, Request, Response } from 'express';
+import { createServer } from 'http';
+
+const app: Application = express();
+app.use(express.json());
+
+// basic health endpoint — stress tests should hit this first
+app.get('/health', (req: Request, res: Response) => {
+  res.json({
+    status: 'ok',
+    uptime: process.uptime(),
+    memory: process.memoryUsage(),
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// simulate a realistic endpoint with variable latency
+app.get('/api/users/:id', async (req, res) => {
+  try {
+    // simulate DB query (replace with your actual data layer)
+    const user = await getUserById(req.params.id);
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+const server = createServer(app);
+
+// track active connections — useful during stress tests
+let activeConnections = 0;
+server.on('connection', (socket) => {
+  activeConnections++;
+  socket.on('close', () => activeConnections--);
+});
+
+server.listen(3000, () => {
+  console.log('Server running on port 3000');
+});
+```
+
+The same pattern applies in any framework. In Fastify, Hono, Go's `net/http`, or Django — you want a health endpoint, structured error responses, and visibility into connection state before you start throwing load at it.
+
+---
+
+## Tool 1: Apache Bench (ab)
+
+[Apache Bench](https://httpd.apache.org/docs/2.4/programs/ab.html) ships with most Linux distributions and macOS. It's the fastest way to run a quick stress test without installing anything.
+
+```bash
+# 1000 requests, 50 concurrent users
+ab -n 1000 -c 50 http://localhost:3000/api/users/1
+```
+
+The output that matters:
+
+```txt
+Requests per second:    342.18 [#/sec] (mean)
+Time per request:       146.12 [ms] (mean)
+Time per request:       2.922 [ms] (mean, across all concurrent requests)
+
+Percentage of the requests served within a certain time (ms)
+  50%     89
+  75%    134
+  90%    198
+  95%    267
+  99%    891
+ 100%   2341 (longest request)
+```
+
+Pay attention to the percentiles, not the mean. The mean can look healthy while the p99 is on fire. If your p99 is 10x your p50, that means something is wrong; likely a slow database query or a garbage collection pause hitting random requests.
+
+Apache Bench is good for quick checks. It doesn't support HTTP/2, custom scripting, or realistic user scenarios. For anything more complex, use k6.
+
+---
+
+## Tool 2: k6
+
+[k6](https://k6.io/) is the tool most teams reach for when they need realistic load scenarios. Tests are written in JavaScript, so you can model actual user behavior.
+
+Install:
+
+```bash
+brew install k6                     # macOS
+sudo apt install k6                 # Ubuntu/Debian
+winget install k6 --source winget   # windows
+```
+
+A basic stress test script:
+
+```javascript
+// stress-test.js
+import http from 'k6/http';
+import { check, sleep } from 'k6';
+import { Rate, Trend } from 'k6/metrics';
+
+// custom metrics
+const errorRate = new Rate('error_rate');
+const responseTime = new Trend('response_time');
+
+export const options = {
+  stages: [
+    { duration: '30s', target: 50 }, // ramp up to 50 users
+    { duration: '1m', target: 50 }, // hold at 50 users
+    { duration: '30s', target: 200 }, // spike to 200 users
+    { duration: '1m', target: 200 }, // hold at 200
+    { duration: '30s', target: 0 }, // ramp down
+  ],
+  thresholds: {
+    http_req_duration: ['p(95)<500'], // 95% of requests under 500ms
+    error_rate: ['rate<0.01'], // less than 1% errors
+  },
+};
+
+export default function () {
+  const res = http.get('http://localhost:3000/api/users/1', {
+    headers: { 'Content-Type': 'application/json' },
+  });
+
+  // Record custom metrics
+  responseTime.add(res.timings.duration);
+  errorRate.add(res.status !== 200);
+
+  check(res, {
+    'status is 200': (r) => r.status === 200,
+    'response time < 500ms': (r) => r.timings.duration < 500,
+  });
+
+  sleep(1); // simulate realistic user think time
+}
+```
+
+Run it:
+
+```bash
+k6 run stress-test.js
+```
+
+<FramedImage
+  src="https://assets.harshalvk.com/image/upload/v1788789698/k6%20stress-test%20results.png"
+  darkSrc="https://assets.harshalvk.com/image/upload/v1788789698/k6%20stress-test%20results.png"
+  alt="Memory stack diagram"
+  width={1904}
+  height={1332}
+/>
+
+> Running on an i5 13th gen, 24GB RAM — local machine, not a cloud server.
+> The numbers below are from an actual test run against a local Express server.
+
+The stages block is where the actual stress testing happens. Ramp up gradually, hold, then spike. The spike is the position where you find the real problems & most servers handle gradual load fine but fall apart under sudden bursts.
+
+The thresholds block is equally important. Without them, k6 reports results but doesn't tell you if you passed or failed. With them, the command exits with a non-zero status code when thresholds are violated — which means you can run this in CI and fail a deployment if the server degrades.
+
+---
+
+## Tool 3: Artillery
+
+Artillery is better than k6 for teams who want YAML-based configuration without writing JavaScript, and for testing WebSocket or Socket.io endpoints.
+
+```bash
+npm install -g artillery
+```
+
+A stress test configuration:
+
+```yaml
+# stress-test.yml
+config:
+  target: 'http://localhost:3000'
+  phases:
+    - duration: 60
+      arrivalRate: 10
+      name: 'Warm up'
+    - duration: 120
+      arrivalRate: 50
+      name: 'Sustained load'
+    - duration: 30
+      arrivalRate: 200
+      name: 'Spike'
+  defaults:
+    headers:
+      Content-Type: 'application/json'
+
+scenarios:
+  - name: 'User endpoints'
+    weight: 70
+    flow:
+      - get:
+          url: '/api/users/1'
+          expect:
+            - statusCode: 200
+            - hasProperty: 'id'
+      - think: 1
+
+  - name: 'Health check'
+    weight: 30
+    flow:
+      - get:
+          url: '/health'
+          expect:
+            - statusCode: 200
+```
+
+Run it:
+
+```bash
+artillery run stress-test.yml
+```
+
+The `weight` property lets you model realistic traffic distribution. In production, not every request hits the same endpoint. If 70% of your traffic is user reads and 30% is health checks, model that.
+
+---
+
+## What to Monitor While Tests Run
+
+Running a stress test without watching your server is like driving blind. These are the metrics to track in real time:
+
+**Response time percentiles (p50, p95, p99)**
+
+Mean response time hides outliers. A p99 of 2 seconds means 1% of your users are waiting 2 seconds — which at 1000 req/s is 10 users per second having a bad experience.
+
+**Error rate**
+
+Any non-2xx response is a failure. Track them separately — a 503 (server overloaded) is different from a 500 (application error), and both are different from a timeout.
+
+**CPU and memory**
+
+CPU saturation is recoverable. Memory that climbs and never comes back is a leak. Watch the trend, not the peak.
+
+**Active connections and connection pool usage**
+
+If you're using a database, the connection pool is often the first thing that exhausts. A pool of 10 connections serving 200 concurrent requests will queue requests, and those queued requests show up as latency spikes in your p99.
+
+**Event loop lag (Node.js specific)**
+
+In any Node.js server, the event loop runs on a single thread. If a slow synchronous operation blocks it, everything stops. Watch event loop lag — if it's consistently above 100ms, you have blocking code somewhere.
+
+```typescript
+// Add this to your Express server to expose event loop lag
+import { monitorEventLoopDelay } from 'perf_hooks';
+
+const histogram = monitorEventLoopDelay({ resolution: 10 });
+histogram.enable();
+
+app.get('/metrics', (req, res) => {
+  res.json({
+    eventLoopDelay: {
+      mean: histogram.mean / 1e6, // convert nanoseconds to ms
+      p99: histogram.percentile(99) / 1e6,
+      max: histogram.max / 1e6,
+    },
+    memory: process.memoryUsage(),
+    uptime: process.uptime(),
+  });
+});
+```
+
+The same concept applies to other runtimes: Go has goroutine counts, Python has GIL contention, Java has thread pool saturation. Know the chokepoint for your runtime.
+
+---
+
+## Common Failure Patterns and What They Mean
+
+**Latency climbs linearly with concurrency**
+
+The server is processing requests serially somewhere. Check for synchronous operations, database queries without connection pooling, or mutex-heavy code.
+
+**Latency is stable then falls off a cliff**
+
+You hit a resource limit — connection pool, file descriptor limit, memory. Find the threshold and either raise the limit or optimize for it.
+
+**Memory grows and never returns**
+
+Likely a leak. In Node.js, common causes are uncleaned event listeners, closures holding references longer than necessary, or caches with no eviction policy. Run a soak test (low load, long duration) to confirm it's a leak and not just high watermark memory usage.
+
+**High error rate at a specific concurrency level**
+
+You found your breaking point. Now decide whether to raise it (more resources, better connection pooling) or accept it and add circuit breakers to fail gracefully before that point.
+
+**p99 is fine but individual requests time out**
+
+Usually a slow database query that only surfaces with contention, or a third-party API call with no timeout set. Set explicit timeouts on everything external.
+
+---
+
+## Adding Timeouts and Circuit Breakers
+
+Finding the breaking point is only useful if you do something about it. The two most common patterns:
+
+**Request timeouts** — kill slow requests before they pile up
+
+```typescript
+import express from 'express';
+
+const app = express();
+
+// Timeout middleware — applies to every route
+app.use((req, res, next) => {
+  res.setTimeout(5000, () => {
+    res.status(503).json({
+      error: 'Request timeout',
+      message: 'The server took too long to respond',
+    });
+  });
+  next();
+});
+
+app.get('/api/users/:id', async (req, res) => {
+  // Even with the middleware timeout, set explicit timeouts on DB calls
+  const user = await getUserById(req.params.id, { timeout: 3000 });
+  res.json(user);
+});
+```
+
+**Circuit breakers** — stop calling a service that's already failing
+
+```typescript
+class CircuitBreaker {
+  private failures = 0;
+  private lastFailureTime = 0;
+  private state: 'closed' | 'open' | 'half-open' = 'closed';
+
+  constructor(
+    private readonly threshold: number = 5,
+    private readonly timeout: number = 30000
+  ) {}
+
+  async call<T>(fn: () => Promise<T>): Promise<T> {
+    if (this.state === 'open') {
+      if (Date.now() - this.lastFailureTime > this.timeout) {
+        this.state = 'half-open';
+      } else {
+        throw new Error('Circuit breaker is open');
+      }
+    }
+
+    try {
+      const result = await fn();
+      this.onSuccess();
+      return result;
+    } catch (err) {
+      this.onFailure();
+      throw err;
+    }
+  }
+
+  private onSuccess() {
+    this.failures = 0;
+    this.state = 'closed';
+  }
+
+  private onFailure() {
+    this.failures++;
+    this.lastFailureTime = Date.now();
+    if (this.failures >= this.threshold) {
+      this.state = 'open';
+    }
+  }
+}
+
+// Usage — works with any async function
+const dbBreaker = new CircuitBreaker(5, 30000);
+
+app.get('/api/users/:id', async (req, res) => {
+  try {
+    const user = await dbBreaker.call(() => getUserById(req.params.id));
+    res.json(user);
+  } catch (err) {
+    if (err.message === 'Circuit breaker is open') {
+      res.status(503).json({ error: 'Service temporarily unavailable' });
+    } else {
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+});
+```
+
+The circuit breaker pattern applies at the framework level — the code above works in Express, but the same logic works in Fastify, Hono, Koa, or any other HTTP server. The pattern is language-agnostic: detect failure, stop trying, wait, retry carefully.
+
+---
+
+## Running Stress Tests in CI
+
+A stress test you only run manually before a big release is not a stress test. It's a ritual.
+
+The right setup: stress tests run in CI on every significant change, with thresholds that fail the build. Here's how to wire k6 into GitHub Actions:
+
+```yaml
+# .github/workflows/stress-test.yml
+name: Stress Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  stress-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Start server
+        run: |
+          npm install
+          npm run build
+          npm start &
+          sleep 5  # wait for server to be ready
+
+      - name: Wait for server
+        run: |
+          timeout 30 bash -c 'until curl -f http://localhost:3000/health; do sleep 1; done'
+
+      - name: Run k6 stress test
+        uses: grafana/k6-action@v0.3.1
+        with:
+          filename: stress-test.js
+        env:
+          K6_OUT: json=results.json
+
+      - name: Upload results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: stress-test-results
+          path: results.json
+```
+
+The thresholds you set in k6 (`http_req_duration: ["p(95)<500"]`) automatically fail the workflow when violated. No custom scripts needed.
+
+---
+
+## The Pattern
+
+Stress testing is not about proving your server is fast. It's about finding where it breaks, understanding why, and deciding what to do about it.
+
+Most servers have a sensible breaking point — a concurrency level where p99 starts climbing, a memory ceiling, a connection pool that runs dry. Finding it in a controlled test is cheap. Finding it in production at 3am is not.
+
+Run a stress test before every significant release. Set thresholds that match your SLA. Watch the percentiles, not the mean. Fix the leaks before they compound.
+
+---
+
+**Resources:**
+
+- [k6 documentation](https://k6.io/docs/) — the best tool for scripted load tests
+- [Artillery docs](https://www.artillery.io/docs) — good for YAML-based scenarios and WebSocket testing
+- [Apache Bench man page](https://httpd.apache.org/docs/2.4/programs/ab.html) — quick reference
+- [The USE Method — Brendan Gregg](https://www.brendangregg.com/usemethod.html) — how to think about system resource analysis during tests
+- [Everything You Need to Know About Load Testing — k6 blog](https://k6.io/blog/different-types-of-load-testing/) — solid breakdown of load vs stress vs soak vs spike
+
+---
+
+happy reading!

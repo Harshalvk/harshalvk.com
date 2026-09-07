@@ -77,7 +77,7 @@ export function FramedImage({
 
   return (
     <div className="relative">
-      <figure className="bg-muted/20 relative w-full space-y-2 [&_img]:rounded-xl">
+      <figure className="bg-muted/20 relative w-full space-y-2 rounded-xl [&_img]:rounded-xl">
         {canZoom ? <ImageZoom>{image}</ImageZoom> : image}
         <div className="pointer-events-none absolute inset-x-0 top-0 h-full rounded-xl inset-ring-1 inset-ring-black/10 dark:inset-ring-white/10" />
       </figure>
@@ -91,12 +91,17 @@ export function FramedImage({
 }
 
 function cleanFilename(src: string): string {
-  const filename =
-    src
-      .split('/')
-      .pop()
-      ?.replace(/\.[^.]+$/, '') ?? '';
-  return filename
+  let filename = '';
+
+  try {
+    const url = new URL(src);
+    filename = url.pathname.split('/').pop() ?? '';
+  } catch {
+    filename = src.split('/').pop()?.split('?')[0].split('#')[0] ?? '';
+  }
+
+  return decodeURIComponent(filename)
+    .replace(/\.[^.]+$/, '')
     .replace(/[-_](dark|light)$/i, '')
     .replace(/[-_]/g, ' ')
     .replace(/\b\w/g, (c) => c.toUpperCase())

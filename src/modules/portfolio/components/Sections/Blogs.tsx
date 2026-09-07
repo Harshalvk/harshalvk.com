@@ -12,7 +12,7 @@ import { Route } from 'next';
 const ID = 'blogs';
 
 const Blogs = async () => {
-  const docs = await getDocsByCategory(ID);
+  const docs = (await getDocsByCategory(ID)).slice(0, 4);
   return (
     <Panel id={ID}>
       <SectionCorners />
