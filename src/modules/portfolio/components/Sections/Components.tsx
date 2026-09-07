@@ -30,7 +30,8 @@ const Components = async () => {
               className={cn(
                 'border-b border-dashed',
                 'odd:border-r-0 sm:odd:border-r',
-                'sm:[&:not(:nth-child(3n))]:border-r'
+                'sm:[&:not(:nth-child(3n))]:border-r',
+                'hover:bg-muted/40'
               )}
               key={doc.slug}
               href={`/components/${doc.slug}` as Route}
