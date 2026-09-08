@@ -21,6 +21,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { WithContext, BlogPosting as PageSchema } from 'schema-dts';
 import { FigCounterProvider } from '@/components/fig-counter';
+import { Comments } from '@/modules/portfolio/components/Sections/Comments';
 
 export async function generateMetadata({ params }: PageProps<'/blog/[slug]'>): Promise<Metadata> {
   const slug = (await params).slug;
@@ -204,6 +205,12 @@ const BlogPage = async ({ params }: { params: Promise<{ slug: string }> }) => {
             </FigCounterProvider>
           </Prose>
         </DocContentCol>
+        <div className="screen-line-top p-4">
+          <h3 className="font-semibold capitalize md:text-xl">comments</h3>
+          <div className="mx-auto max-w-2xl">
+            <Comments />
+          </div>
+        </div>
       </section>
 
       <TableOfContents items={toc} />

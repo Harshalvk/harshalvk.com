@@ -14,8 +14,6 @@ The subtle failures: response times slowly moving from 40ms to 4 seconds, memory
 
 Stress testing is how you find those problems before your users or other do. This blog covers how to do it properly, what tools to use, what to measure, and how to read the results.
 
----
-
 ## What Stress Testing Actually Means
 
 So I used to think "load testing", "stress testing", and "performance testing" interchangeably, but they're not the same thing.
@@ -26,8 +24,6 @@ So I used to think "load testing", "stress testing", and "performance testing" i
 - **Spike testing**: sudden burst of traffic to see how the server handles abrupt change
 
 This blog focuses on stress testing, but the tools and patterns apply to all of them.
-
----
 
 ## Setting Up a Testable Server
 
@@ -80,8 +76,6 @@ server.listen(3000, () => {
 
 The same pattern applies in any framework. In Fastify, Hono, Go's `net/http`, or Django — you want a health endpoint, structured error responses, and visibility into connection state before you start throwing load at it.
 
----
-
 ## Tool 1: Apache Bench (ab)
 
 [Apache Bench](https://httpd.apache.org/docs/2.4/programs/ab.html) ships with most Linux distributions and macOS. It's the fastest way to run a quick stress test without installing anything.
@@ -110,8 +104,6 @@ Percentage of the requests served within a certain time (ms)
 Pay attention to the percentiles, not the mean. The mean can look healthy while the p99 is on fire. If your p99 is 10x your p50, that means something is wrong; likely a slow database query or a garbage collection pause hitting random requests.
 
 Apache Bench is good for quick checks. It doesn't support HTTP/2, custom scripting, or realistic user scenarios. For anything more complex, use k6.
-
----
 
 ## Tool 2: k6
 
@@ -190,11 +182,9 @@ The stages block is where the actual stress testing happens. Ramp up gradually, 
 
 The thresholds block is equally important. Without them, k6 reports results but doesn't tell you if you passed or failed. With them, the command exits with a non-zero status code when thresholds are violated — which means you can run this in CI and fail a deployment if the server degrades.
 
----
-
 ## Tool 3: Artillery
 
-Artillery is better than k6 for teams who want YAML-based configuration without writing JavaScript, and for testing WebSocket or Socket.io endpoints.
+[Artillery](https://www.artillery.io/) is better than k6 for teams who want YAML-based configuration without writing JavaScript, and for testing WebSocket or Socket.io endpoints.
 
 ```bash
 npm install -g artillery
@@ -248,8 +238,6 @@ artillery run stress-test.yml
 
 The `weight` property lets you model realistic traffic distribution. In production, not every request hits the same endpoint. If 70% of your traffic is user reads and 30% is health checks, model that.
 
----
-
 ## What to Monitor While Tests Run
 
 Running a stress test without watching your server is like driving blind. These are the metrics to track in real time:
@@ -296,8 +284,6 @@ app.get('/metrics', (req, res) => {
 
 The same concept applies to other runtimes: Go has goroutine counts, Python has GIL contention, Java has thread pool saturation. Know the chokepoint for your runtime.
 
----
-
 ## Common Failure Patterns and What They Mean
 
 **Latency climbs linearly with concurrency**
@@ -319,8 +305,6 @@ You found your breaking point. Now decide whether to raise it (more resources, b
 **p99 is fine but individual requests time out**
 
 Usually a slow database query that only surfaces with contention, or a third-party API call with no timeout set. Set explicit timeouts on everything external.
-
----
 
 ## Adding Timeouts and Circuit Breakers
 
@@ -416,8 +400,6 @@ app.get('/api/users/:id', async (req, res) => {
 
 The circuit breaker pattern applies at the framework level — the code above works in Express, but the same logic works in Fastify, Hono, Koa, or any other HTTP server. The pattern is language-agnostic: detect failure, stop trying, wait, retry carefully.
 
----
-
 ## Running Stress Tests in CI
 
 A stress test you only run manually before a big release is not a stress test. It's a ritual.
@@ -468,8 +450,6 @@ jobs:
 
 The thresholds you set in k6 (`http_req_duration: ["p(95)<500"]`) automatically fail the workflow when violated. No custom scripts needed.
 
----
-
 ## The Pattern
 
 Stress testing is not about proving your server is fast. It's about finding where it breaks, understanding why, and deciding what to do about it.
@@ -478,8 +458,6 @@ Most servers have a sensible breaking point — a concurrency level where p99 st
 
 Run a stress test before every significant release. Set thresholds that match your SLA. Watch the percentiles, not the mean. Fix the leaks before they compound.
 
----
-
 **Resources:**
 
 - [k6 documentation](https://k6.io/docs/) — the best tool for scripted load tests
@@ -487,7 +465,5 @@ Run a stress test before every significant release. Set thresholds that match yo
 - [Apache Bench man page](https://httpd.apache.org/docs/2.4/programs/ab.html) — quick reference
 - [The USE Method — Brendan Gregg](https://www.brendangregg.com/usemethod.html) — how to think about system resource analysis during tests
 - [Everything You Need to Know About Load Testing — k6 blog](https://k6.io/blog/different-types-of-load-testing/) — solid breakdown of load vs stress vs soak vs spike
-
----
 
 happy reading!
